@@ -5,7 +5,7 @@ const postSchema = new Schema({
   body: { type: String, required: true },
   image: { type: String, required: true },
   likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  comment: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 module.exports = model("Post", postSchema);

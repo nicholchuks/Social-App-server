@@ -47,7 +47,7 @@ const registerUser = async (req, res, next) => {
       email: newEmail,
       password: hashPass,
     });
-    res.status(201).json(`New User ${fullName} created successfully`);
+    res.status(201).json(newUser);
   } catch (error) {
     return next(new HttpError(error));
   }

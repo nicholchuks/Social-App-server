@@ -10,6 +10,19 @@ const {
   changeUserAvatar,
 } = require("../controllers/userControllers");
 
+const {
+  createPost,
+  updatePost,
+  deletePost,
+  getPost,
+  getPosts,
+  getUserPosts,
+  getUserBookmarks,
+  createBookmark,
+  likeDislikePost,
+  getFollowingPosts,
+} = require("../controllers/postController");
+
 const authMiddleware = require("../middlewares/authMiddleware");
 
 // USER ROUTES

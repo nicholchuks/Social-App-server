@@ -114,7 +114,7 @@ const updatePost = async (req, res, next) => {
       return next(
         new HttpError(
           "You can't update this post since you are not the creator",
-          422
+          403
         )
       );
     }
@@ -143,7 +143,7 @@ const deletePost = async (req, res, next) => {
     if (post?.creator != req.user.id) {
       return next(
         new HttpError(
-          "You can't update this post since you are not the creator",
+          "You can't delete this post since you are not the creator",
           422
         )
       );

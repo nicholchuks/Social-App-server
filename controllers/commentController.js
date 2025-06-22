@@ -17,7 +17,7 @@ const createComment = async (req, res, next) => {
     const { postId } = req.params;
     const { comment } = req.body;
     if (!comment) {
-      return next(new HttpError("Please write a comment"));
+      return next(new HttpError("Please write a comment", 422));
     }
 
     // Get comment creator from db

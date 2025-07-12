@@ -139,44 +139,85 @@ const editUser = async (req, res, next) => {
 // **************** FOLLOW/UNFOLLOW USER
 // GET: api/users/:id/follow-unfollow
 // PROTECTED
+// const followUnfollowUser = async (req, res, next) => {
+//   try {
+//     const userToFollowId = req.params.id;
+//     if (req.user.id == userToFollowId) {
+//       return next(new HttpError("You cant follow/unfollow yourself", 422));
+//     }
+
+//     // Get the currentUser from the db
+//     const currentUser = await UserModel.findById(req.user.id);
+//     const isFollowing = currentUser?.following?.includes(userToFollowId);
+//     // Follow if not following, else unfollow if following
+//     if (!isFollowing) {
+//       const updatedUser = await UserModel.findByIdAndUpdate(
+//         userToFollowId,
+//         { $push: { followers: req.user.id } },
+//         { new: true }
+//       );
+//       await UserModel.findByIdAndUpdate(
+//         req.user.id,
+//         { $push: { following: userToFollowId } },
+//         { new: true }
+//       );
+//       res.json(updatedUser);
+//     } else {
+//       const updatedUser = await UserModel.findByIdAndUpdate(
+//         currentUser,
+//         { $pull: { following: req.user.id } },
+//         { new: true }
+//       );
+//       await UserModel.findByIdAndUpdate(
+//         req.user.id,
+//         { $pull: { following: userToFollowId } },
+//         { new: true }
+//       );
+//       res.json(updatedUser);
+//     }
+//   } catch (error) {
+//     return next(new HttpError(error));
+//   }
+// };
+// Controller: /users/:id/follow-unfollow
 const followUnfollowUser = async (req, res, next) => {
+  const userId = req.params.id;
+  const loggedInUserId = req.user.id;
+
   try {
-    const userToFollowId = req.params.id;
-    if (req.user.id == userToFollowId) {
-      return next(new HttpError("You cant follow/unfollow yourself", 422));
+    if (userId === loggedInUserId) {
+      return next(new HttpError("You cannot follow yourself", 403));
     }
 
-    // Get the currentUser from the db
-    const currentUser = await UserModel.findById(req.user.id);
-    const isFollowing = currentUser?.following?.includes(userToFollowId);
-    // Follow if not following, else unfollow if following
-    if (!isFollowing) {
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        userToFollowId,
-        { $push: { followers: req.user.id } },
-        { new: true }
-      );
-      await UserModel.findByIdAndUpdate(
-        req.user.id,
-        { $push: { following: userToFollowId } },
-        { new: true }
-      );
-      res.json(updatedUser);
-    } else {
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        currentUser,
-        { $pull: { following: req.user.id } },
-        { new: true }
-      );
-      await UserModel.findByIdAndUpdate(
-        req.user.id,
-        { $pull: { following: userToFollowId } },
-        { new: true }
-      );
-      res.json(updatedUser);
+    const userToFollow = await UserModel.findById(userId);
+    const loggedInUser = await UserModel.findById(loggedInUserId);
+
+    if (!userToFollow || !loggedInUser) {
+      return next(new HttpError("User not found", 404));
     }
+
+    const isFollowing = userToFollow.followers.includes(loggedInUserId);
+
+    if (isFollowing) {
+      // UNFOLLOW
+      userToFollow.followers = userToFollow.followers.filter(
+        (id) => id.toString() !== loggedInUserId
+      );
+      loggedInUser.following = loggedInUser.following.filter(
+        (id) => id.toString() !== userId
+      );
+    } else {
+      // FOLLOW
+      userToFollow.followers.push(loggedInUserId);
+      loggedInUser.following.push(userId);
+    }
+
+    await userToFollow.save();
+    await loggedInUser.save();
+
+    res.status(200).json(userToFollow);
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Failed to follow/unfollow user", 500));
   }
 };
 

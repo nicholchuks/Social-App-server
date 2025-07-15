@@ -72,13 +72,34 @@ const createPost = async (req, res, next) => {
 // GET : api/posts/:id
 // PROTECTED
 
+// const getPost = async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//     // const post = await PostModel.findById(id);
+//     const post = await PostModel.findById(id)
+//       .populate("creator")
+//       .populate({ path: "comments", options: { sort: { createdAt: -1 } } });
+//     res.status(200).json(post);
+//   } catch (error) {
+//     return next(new HttpError(error));
+//   }
+// };
+
 const getPost = async (req, res, next) => {
   try {
     const { id } = req.params;
-    // const post = await PostModel.findById(id);
+
     const post = await PostModel.findById(id)
       .populate("creator")
-      .populate({ path: "comments", options: { sort: { createdAt: -1 } } });
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator.creatorId",
+          model: "User",
+        },
+        options: { sort: { createdAt: -1 } },
+      });
+
     res.status(200).json(post);
   } catch (error) {
     return next(new HttpError(error));
